@@ -121,8 +121,9 @@ function isQualifiedForMeta(d: SurveyData): boolean {
   const okType = d.propertyType === 'single-family' || d.propertyType === 'multi-family'
   const okListed = d.listedOnMarket === 'not-listed'
   const okOwner = d.isLegalOwner !== 'no'
-  const okCondition = d.condition !== 'excellent'
-  return okType && okListed && okOwner && okCondition
+  // Excellent condition is handled by the hard-block in the field handler
+  // (Option 1), so it never reaches here — no soft-DQ exclusion needed.
+  return okType && okListed && okOwner
 }
 function leadQuality(score: number): 'premium' | 'standard' | 'low' {
   if (score >= 6) return 'premium'
@@ -133,7 +134,6 @@ function disqualifyReasonFor(d: SurveyData): string {
   if (d.propertyType !== 'single-family' && d.propertyType !== 'multi-family') return 'property_type'
   if (d.listedOnMarket !== 'not-listed') return 'listed'
   if (d.isLegalOwner === 'no') return 'not_owner'
-  if (d.condition === 'excellent') return 'excellent_condition'
   return 'unknown'
 }
 // ──────────────────────────────────────────────────────────────────────
@@ -420,6 +420,12 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
       setTimeout(() => { setDisqualifyReason("noReason"); setIsDisqualified(true) }, 300)
       return
     }
+    // Excellent, move-in-ready homes hard-disqualify — block screen, lead never
+    // submitted (no CRM, no Meta). Condition-only rule, re-blocks on back-nav.
+    if (field === "condition" && value === "excellent") {
+      setTimeout(() => { setDisqualifyReason("excellentCondition"); setIsDisqualified(true) }, 300)
+      return
+    }
 
     setTimeout(() => { if (step < totalSteps) setStep(step + 1) }, 300)
   }
@@ -451,6 +457,11 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
 
   if (isDisqualified) {
     const disqualifyMessages: Record<string, { title: string; message: string; detail: string }> = {
+      excellentCondition: {
+        title: "We're Unable to Assist",
+        message: "We focus on homeowners whose properties need some work. Homes in excellent, move-in-ready condition are usually a better fit for a traditional sale.",
+        detail: "If your situation is unique, feel free to give us a call and we'll see what we can do.",
+      },
       notOwner: {
         title: "We're Unable to Assist",
         message: "Unfortunately, we can only work with individuals who have the legal right to sell the property.",
