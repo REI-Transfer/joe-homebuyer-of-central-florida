@@ -420,6 +420,12 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
       setTimeout(() => { setDisqualifyReason("noReason"); setIsDisqualified(true) }, 300)
       return
     }
+    // Excellent-condition hard DQ: move-in-ready homes net more on the open
+    // market — block the user on a not-a-fit screen; lead is never submitted.
+    if (field === "condition" && value === "excellent") {
+      setTimeout(() => { setDisqualifyReason("excellentCondition"); setIsDisqualified(true) }, 300)
+      return
+    }
 
     setTimeout(() => { if (step < totalSteps) setStep(step + 1) }, 300)
   }
@@ -480,6 +486,11 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
         title: "We're Unable to Make an Offer",
         message: "Unfortunately, based on how long you've owned the property, there typically isn't enough equity for us to make a fair cash offer.",
         detail: "If your situation changes or you'd like to discuss your options, feel free to give us a call. We're always happy to help.",
+      },
+      excellentCondition: {
+        title: "We're Not the Right Fit",
+        message: "Homes in excellent, move-in-ready condition typically sell for more on the open market than any cash offer we could make.",
+        detail: "We specialize in homes that need some work. If the property's condition changes or you'd like to talk through your options, we're always happy to help \u2014 just give us a call.",
       },
     }
     const msg = disqualifyMessages[disqualifyReason] || disqualifyMessages.notOwner
