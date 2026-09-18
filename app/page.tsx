@@ -82,6 +82,7 @@ export default function HomePage() {
               disqualifiedOwnershipLengths={disqualifiedOwnershipLengths}
               allowedStates={allowedStates}
               motivationV2={config.motivationV2}
+              companyName={config.companyName}
             />
           </div>
 
