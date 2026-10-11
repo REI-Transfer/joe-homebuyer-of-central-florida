@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 
+const BLOCKED_PHONES = new Set(["4072021452"])
+const BLOCKED_EMAILS = new Set(["amolanaturalezaz@zgmail.com"])
+
 // Simple in-memory rate limiter (resets on deploy/restart)
 const submissionLog = new Map<string, { count: number; firstSubmit: number }>()
 
@@ -65,6 +68,13 @@ export async function POST(request: Request) {
 
     if (!(data.address || "").trim()) {
       return NextResponse.json({ success: false, error: "Address required" }, { status: 400 })
+    }
+
+    // Blocklist: matched senders are dropped before the n8n + GoFunnel fan-out
+    // (both stages). 200 with success:false sends the main form to /thank-you
+    // with no Meta Lead and no error shown. Phone = last 10 digits, email lowercase.
+    if (BLOCKED_PHONES.has(phone) || BLOCKED_EMAILS.has(email)) {
+      return NextResponse.json({ success: false })
     }
 
     // Add server IP + normalized lead_stage to payload
