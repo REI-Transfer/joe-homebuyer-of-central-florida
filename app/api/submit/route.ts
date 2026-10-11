@@ -1,4 +1,11 @@
 import { NextResponse } from "next/server"
+import { createHash } from "crypto"
+
+// Blocklist as SHA-256 of the normalized value (phone = last 10 digits,
+// email = trimmed lowercase), so no sender PII is stored in the repo.
+const BLOCKED_PHONE_HASHES = new Set(["a7b4e2aec4ddc6607f5d2f4835a6ad2409f631ce5fbe6da09cc8a0cfdb36b861"])
+const BLOCKED_EMAIL_HASHES = new Set(["5b59d9e280cd2f5a900e01f5e5996bb29db27fe02b010076861ba12343fc7e84"])
+const sha256 = (v: string) => createHash("sha256").update(v).digest("hex")
 
 // Simple in-memory rate limiter (resets on deploy/restart)
 const submissionLog = new Map<string, { count: number; firstSubmit: number }>()
@@ -65,6 +72,13 @@ export async function POST(request: Request) {
 
     if (!(data.address || "").trim()) {
       return NextResponse.json({ success: false, error: "Address required" }, { status: 400 })
+    }
+
+    // Blocklist: matched senders are dropped before the n8n + GoFunnel fan-out
+    // (both stages). 200 with success:false sends the main form to /thank-you
+    // with no Meta Lead and no error shown.
+    if (BLOCKED_PHONE_HASHES.has(sha256(phone)) || BLOCKED_EMAIL_HASHES.has(sha256(email))) {
+      return NextResponse.json({ success: false })
     }
 
     // Add server IP + normalized lead_stage to payload
