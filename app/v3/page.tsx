@@ -13,6 +13,7 @@
  */
 
 import config from "@/lib/config"
+import { parseAllowedCounties } from "@/lib/county-gate"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 import { ZeroDistractionForm } from "@/components/survey/zero-distraction-form"
@@ -38,6 +39,7 @@ export default function V3Page() {
   const disqualifiedPropertyTypes = config.disqualifiedPropertyTypes
     .split(",").map(s => s.trim()).filter(Boolean)
   const allowedStates = config.allowedStates.split(",").map(s => s.trim()).filter(Boolean)
+  const allowedCounties = parseAllowedCounties(config.allowedCounties)
 
   return (
     <main className="relative min-h-screen bg-gray-50">
@@ -77,6 +79,7 @@ export default function V3Page() {
           serviceAreas={parsedServiceAreas}
           disqualifiedPropertyTypes={disqualifiedPropertyTypes}
           allowedStates={allowedStates}
+          allowedCounties={allowedCounties}
           phoneHref={config.phoneHref}
           phoneDisplay={config.phoneDisplay}
           motivationV2={config.motivationV2}

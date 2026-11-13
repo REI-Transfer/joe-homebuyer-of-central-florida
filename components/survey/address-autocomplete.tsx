@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { MapPin } from "lucide-react"
+import { isInAllowedCounty } from "@/lib/county-gate"
 
 export interface AddressDetails {
   formattedAddress: string
@@ -29,6 +30,9 @@ interface AddressAutocompleteProps {
   // 2-letter US state codes to ALLOW. Empty → no state gate. Out-of-list
   // states are routed through onOutOfArea (same block path as out-of-service-area).
   allowedStates?: string[]
+  // "ST:County Name" entries (ALLOWED_COUNTIES). Gate = circle OR county.
+  // Empty → no county gate (legacy circle-only).
+  allowedCounties?: string[]
   placeholder?: string
 }
 
@@ -93,6 +97,7 @@ export function AddressAutocomplete({
   onOutOfArea,
   serviceAreas = [],
   allowedStates = [],
+  allowedCounties = [],
   placeholder = "Start typing your address...",
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -176,9 +181,13 @@ export function AddressAutocomplete({
         return
       }
 
-      // Service area validation
-      if (serviceAreas.length > 0 && lat !== undefined && lng !== undefined) {
-        if (!isInServiceArea(lat, lng, serviceAreas)) {
+      // Service area validation: circle OR listed county (ALLOWED_COUNTIES).
+      const countyGateOn = allowedCounties.length > 0
+      const circleGateOn = serviceAreas.length > 0 && lat !== undefined && lng !== undefined
+      if (countyGateOn || circleGateOn) {
+        const inCircle = circleGateOn && isInServiceArea(lat!, lng!, serviceAreas)
+        const inCounty = countyGateOn && isInAllowedCounty(state, county, allowedCounties)
+        if (!inCircle && !inCounty) {
           onChange(place.formatted_address)
           onOutOfArea?.(place.formatted_address)
           return

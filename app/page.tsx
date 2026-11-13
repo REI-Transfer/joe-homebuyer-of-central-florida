@@ -4,6 +4,7 @@ import { VSLSection } from "@/components/survey/vsl-section"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import config from "@/lib/config"
+import { parseAllowedCounties } from "@/lib/county-gate"
 
 export default function HomePage() {
   const stats = [
@@ -19,6 +20,7 @@ export default function HomePage() {
   const disqualifiedPropertyTypes = config.disqualifiedPropertyTypes.split(",").map(s => s.trim()).filter(Boolean)
   const disqualifiedOwnershipLengths = config.disqualifiedOwnershipLengths.split(",").map(s => s.trim()).filter(Boolean)
   const allowedStates = config.allowedStates.split(",").map(s => s.trim()).filter(Boolean)
+  const allowedCounties = parseAllowedCounties(config.allowedCounties)
 
   const ibuykc = config.useIbuykcStyle
 
@@ -81,6 +83,7 @@ export default function HomePage() {
               disqualifiedPropertyTypes={disqualifiedPropertyTypes}
               disqualifiedOwnershipLengths={disqualifiedOwnershipLengths}
               allowedStates={allowedStates}
+              allowedCounties={allowedCounties}
               motivationV2={config.motivationV2}
               companyName={config.companyName}
             />
