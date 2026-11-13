@@ -61,6 +61,10 @@ const config = {
   // @main projects that never set ALLOWED_STATES.
   allowedStates:   process.env.ALLOWED_STATES ?? "",
 
+  // County allow-list — comma-separated "ST:County Name" (e.g. "FL:Orange County").
+  // Gate = service-area circle OR listed county. Empty (default) → no county gate.
+  allowedCounties: process.env.ALLOWED_COUNTIES ?? "",
+
   // Webhook (server-side only — never exposed to browser)
   webhookUrl:      process.env.WEBHOOK_URL ?? "",
 

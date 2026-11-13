@@ -43,6 +43,7 @@ import {
   Eye,
 } from "lucide-react"
 import { AddressAutocomplete, type AddressDetails, type ServiceArea } from "@/components/survey/address-autocomplete"
+import { isInAllowedCounty } from "@/lib/county-gate"
 import { readCapturedTracking } from "@/components/tracking/tracking-capture"
 import { scoreLead } from "@/lib/lead-scoring"
 
@@ -58,6 +59,8 @@ type Props = {
   disqualifiedPropertyTypes: string[]
   // 2-letter US state codes to ALLOW (ALLOWED_STATES). Empty → no state gate.
   allowedStates?: string[]
+  // "ST:County Name" entries (ALLOWED_COUNTIES). Gate = circle OR county.
+  allowedCounties?: string[]
   phoneHref?: string
   phoneDisplay?: string
   // When true (MOTIVATION_V2), render William's v2 reason list incl. the
@@ -253,7 +256,7 @@ function StepHeader({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPropertyTypes, allowedStates = [], motivationV2 = false }: Props) {
+export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPropertyTypes, allowedStates = [], allowedCounties = [], motivationV2 = false }: Props) {
   const [step, setStep] = useState(1)
   const TOTAL_STEPS = 9
   const [outsideAreaError, setOutsideAreaError] = useState(false)
@@ -297,8 +300,9 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
   const isPropertyDisqualified = (typeId: string) => disqualifiedPropertyTypes.includes(typeId)
 
   const isInServiceArea = (details: AddressDetails): boolean => {
-    if (serviceAreas.length === 0) return true
-    if (!details.lat || !details.lng) return true
+    if (allowedCounties.length > 0 && isInAllowedCounty(details.state, details.county, allowedCounties)) return true
+    if (serviceAreas.length === 0) return allowedCounties.length === 0
+    if (!details.lat || !details.lng) return allowedCounties.length === 0
     return serviceAreas.some(area => {
       const dLat = (details.lat! - area.centerLat) * Math.PI / 180
       const dLng = (details.lng! - area.centerLng) * Math.PI / 180
@@ -587,6 +591,7 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
               onOutOfArea={() => setOutsideAreaError(true)}
               serviceAreas={serviceAreas}
               allowedStates={allowedStates}
+              allowedCounties={allowedCounties}
               placeholder="Start typing your address..."
             />
             {outsideAreaError && (

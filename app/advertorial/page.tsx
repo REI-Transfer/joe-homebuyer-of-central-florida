@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { AdvertorialPage } from "@/components/advertorial/advertorial-page"
 import type { ServiceArea } from "@/components/survey/address-autocomplete"
 import config from "@/lib/config"
+import { parseAllowedCounties } from "@/lib/county-gate"
 
 const market = config.marketName || "Your Area"
 
@@ -18,6 +19,7 @@ export default function AdvertorialRoute() {
   } catch {}
 
   const allowedStates = config.allowedStates.split(",").map(s => s.trim()).filter(Boolean)
+  const allowedCounties = parseAllowedCounties(config.allowedCounties)
 
   return (
     <main className="relative min-h-screen bg-white">
@@ -31,6 +33,7 @@ export default function AdvertorialRoute() {
         headshotUrl={config.headshotUrl}
         serviceAreas={serviceAreas}
         allowedStates={allowedStates}
+        allowedCounties={allowedCounties}
         motivationV2={config.motivationV2}
       />
     </main>
