@@ -76,7 +76,7 @@ export default function HomePage() {
 
           {/* Survey Form */}
           <div className="mt-4 md:mt-6 mx-auto max-w-3xl">
-            <SurveyCard
+            <SurveyCard recordCompanyName={config.companyName}
               phoneDisplay={config.phoneDisplay}
               phoneHref={config.phoneHref}
               serviceAreas={parsedServiceAreas}

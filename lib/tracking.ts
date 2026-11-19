@@ -53,3 +53,18 @@ export async function getIPAddress(): Promise<string> {
     return ""
   }
 }
+
+export function readGfSid(): string {
+  if (typeof window === "undefined") return ""
+  const w = window as unknown as { __gf_sid?: string }
+  if (w.__gf_sid) return w.__gf_sid
+  try {
+    const ls = localStorage.getItem("gf_sid")
+    if (ls) return ls
+  } catch {
+    // localStorage unavailable
+  }
+  const m = document.cookie.match(/(?:^|; )gf_sid=([^;]*)/)
+  if (m) return decodeURIComponent(m[1])
+  return new URLSearchParams(window.location.search).get("sid") || ""
+}

@@ -81,6 +81,8 @@ const config = {
   // worth" hard-disqualifier. Existing rei-survey-template@main projects without
   // this env → falsy → byte-identical legacy reason list, no disqualifier.
   motivationV2:    process.env.MOTIVATION_V2 === "true",
+  // SHOWROOM=1: demo site only (property-record form). Never set on a client site.
+  showroom:        process.env.SHOWROOM === "1",
 } as const
 
 export default config
